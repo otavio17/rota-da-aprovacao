@@ -1,0 +1,34 @@
+{
+  "id": "tjsp-oficial",
+  "banca": "Vunesp",
+  "dataProva": "2027-03-14",
+  "questoesProva": 70,
+  "duracaoMin": 300,
+  "observacao": "Divisão de questões e lista de assuntos vieram de notícias e cursos (nov/2026), não do edital oficial. Conferir no Anexo VIII e ajustar. 'peso' ainda é 1 em todos: calcular pela contagem de provas anteriores. 'semana' é uma sugestão de distribuição.",
+  "blocos": [
+    { "id": "portugues", "nome": "Língua Portuguesa", "questoes": 15, "minimoPct": 50 },
+    { "id": "especificos", "nome": "Conhecimentos Específicos", "questoes": 40, "minimoPct": 50 },
+    { "id": "gerais", "nome": "Conhecimentos Gerais", "questoes": 15, "minimoPct": 0 }
+  ],
+  "topicos": [
+    { "id": "lp-interpretacao", "bloco": "portugues", "disciplina": "Língua Portuguesa", "titulo": "Interpretação de textos", "peso": 1, "semana": 1 },
+    { "id": "lp-significacao", "bloco": "portugues", "disciplina": "Língua Portuguesa", "titulo": "Significação de palavras", "peso": 1, "semana": 1 },
+    { "id": "lp-coesao", "bloco": "portugues", "disciplina": "Língua Portuguesa", "titulo": "Coesão textual", "peso": 1, "semana": 2 },
+    { "id": "lp-classes", "bloco": "portugues", "disciplina": "Língua Portuguesa", "titulo": "Classes de palavras", "peso": 1, "semana": 3 },
+    { "id": "lp-concordancia", "bloco": "portugues", "disciplina": "Língua Portuguesa", "titulo": "Concordância", "peso": 1, "semana": 4 },
+    { "id": "lp-regencia", "bloco": "portugues", "disciplina": "Língua Portuguesa", "titulo": "Regência", "peso": 1, "semana": 4 },
+    { "id": "lp-colocacao", "bloco": "portugues", "disciplina": "Língua Portuguesa", "titulo": "Colocação pronominal", "peso": 1, "semana": 5 },
+    { "id": "lp-crase", "bloco": "portugues", "disciplina": "Língua Portuguesa", "titulo": "Crase", "peso": 1, "semana": 6 },
+    { "id": "lp-pontuacao", "bloco": "portugues", "disciplina": "Língua Portuguesa", "titulo": "Pontuação", "peso": 1, "semana": 7 },
+    { "id": "dpen", "bloco": "especificos", "disciplina": "Direito Penal", "titulo": "Direito Penal (conteúdo a detalhar)", "peso": 1, "semana": 8 },
+    { "id": "dppen", "bloco": "especificos", "disciplina": "Direito Processual Penal", "titulo": "Direito Processual Penal (conteúdo a detalhar)", "peso": 1, "semana": 9 },
+    { "id": "cpc", "bloco": "especificos", "disciplina": "Direito Processual Civil", "titulo": "Processo Civil: citação e intimação (CPC 236-275)", "peso": 1, "semana": 10 },
+    { "id": "dconst", "bloco": "especificos", "disciplina": "Direito Constitucional", "titulo": "Direito Constitucional (conteúdo a detalhar)", "peso": 1, "semana": 11 },
+    { "id": "dadm", "bloco": "especificos", "disciplina": "Direito Administrativo", "titulo": "Direito Administrativo, incluindo Estatuto dos Funcionários Públicos Civis de SP", "peso": 1, "semana": 12 },
+    { "id": "dciv", "bloco": "especificos", "disciplina": "Direito Civil", "titulo": "Direito Civil (conteúdo a detalhar)", "peso": 1, "semana": 13 },
+    { "id": "legesp", "bloco": "especificos", "disciplina": "Legislação Especial", "titulo": "Legislação especial, incluindo Lei de Execução Fiscal (conteúdo a detalhar)", "peso": 1, "semana": 14 },
+    { "id": "gc-atualidades", "bloco": "gerais", "disciplina": "Atualidades", "titulo": "Atualidades e Estatuto da Pessoa com Deficiência", "peso": 1, "semana": 15 },
+    { "id": "gc-matematica", "bloco": "gerais", "disciplina": "Matemática e Raciocínio Lógico", "titulo": "Matemática e raciocínio lógico", "peso": 1, "semana": 15 },
+    { "id": "gc-informatica", "bloco": "gerais", "disciplina": "Informática", "titulo": "Informática", "peso": 1, "semana": 16 }
+  ]
+}

@@ -1,0 +1,18 @@
+[
+  {
+    "id": "tjsp-oficial",
+    "nome": "TJ-SP Oficial de Justiça",
+    "banca": "Vunesp",
+    "dataProva": "2027-03-14",
+    "pasta": "tjsp-oficial",
+    "inscricoes": "28/10/2026 a 10/12/2026 (fontes de terceiros; confirmar no edital)"
+  },
+  {
+    "id": "spaguas",
+    "nome": "SP Águas — Especialista e Analista de Suporte",
+    "banca": "FGV",
+    "dataProva": "2027-01-31",
+    "pasta": "spaguas",
+    "inscricoes": "17/11/2026 a 17/12/2026, pelo portal da FGV (edital nº 01/2026)"
+  }
+]

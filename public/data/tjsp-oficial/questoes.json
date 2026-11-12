@@ -1,0 +1,66 @@
+[
+  {
+    "id": "tjsp-cpc-0001",
+    "topico": "cpc",
+    "disciplina": "Direito Processual Civil",
+    "enunciado": "Segundo o CPC, a citação com hora certa é cabível quando o oficial de justiça, por quantas vezes, houver procurado o réu em seu domicílio sem encontrá-lo?",
+    "alternativas": ["1 vez.", "2 vezes.", "3 vezes.", "5 vezes.", "10 vezes."],
+    "correta": 1,
+    "comentario": "Art. 252 do CPC: após duas procuras frustradas, o oficial volta na hora designada; se não encontrar o réu, intima qualquer familiar ou, na falta, um vizinho.",
+    "referencia": "CPC, art. 252",
+    "fonte": "inedita (revisar)",
+    "dificuldade": 2,
+    "video": ""
+  },
+  {
+    "id": "tjsp-cpc-0002",
+    "topico": "cpc",
+    "disciplina": "Direito Processual Civil",
+    "enunciado": "Na contestação, o réu dispõe de qual prazo, em regra?",
+    "alternativas": ["5 dias úteis.", "10 dias úteis.", "15 dias úteis.", "30 dias corridos.", "60 dias úteis."],
+    "correta": 2,
+    "comentario": "Art. 335 do CPC: 15 dias úteis, contados na forma do art. 231.",
+    "referencia": "CPC, art. 335",
+    "fonte": "inedita (revisar)",
+    "dificuldade": 1,
+    "video": ""
+  },
+  {
+    "id": "tjsp-const-0001",
+    "topico": "dconst",
+    "disciplina": "Direito Constitucional",
+    "enunciado": "Nos termos do art. 5º, LV, da Constituição Federal, são assegurados aos litigantes e aos acusados em geral:",
+    "alternativas": [
+      "o contraditório e a ampla defesa.",
+      "somente a ampla defesa, sem contraditório.",
+      "o sigilo absoluto dos autos, mesmo para as partes.",
+      "a dispensa de advogado em qualquer fase.",
+      "o julgamento por tribunal de exceção."
+    ],
+    "correta": 0,
+    "comentario": "Art. 5º, LV: contraditório e ampla defesa, com os meios e recursos a ela inerentes. O inciso LIII veda o tribunal de exceção.",
+    "referencia": "CF/88, art. 5º, LV",
+    "fonte": "inedita (revisar)",
+    "dificuldade": 1,
+    "video": ""
+  },
+  {
+    "id": "tjsp-const-0002",
+    "topico": "dconst",
+    "disciplina": "Direito Constitucional",
+    "enunciado": "De acordo com o art. 5º, LXIII, da Constituição Federal, o preso será informado de seus direitos, entre os quais o de:",
+    "alternativas": [
+      "permanecer calado.",
+      "exigir que o interrogatório seja feito sem qualquer aviso.",
+      "ser liberado sem julgamento após 24 horas.",
+      "não ser identificado pela autoridade policial.",
+      "dispensar a assistência de advogado."
+    ],
+    "correta": 0,
+    "comentario": "Art. 5º, LXIII: o preso será informado de seus direitos, entre os quais o de permanecer calado, sendo-lhe assegurada a assistência da família e de advogado.",
+    "referencia": "CF/88, art. 5º, LXIII",
+    "fonte": "inedita (revisar)",
+    "dificuldade": 1,
+    "video": ""
+  }
+]

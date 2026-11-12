@@ -214,11 +214,12 @@ button:disabled { opacity: 0.45; cursor: default; }
   z-index: 10;
 }
 .navegacao a {
-  font-size: 0.74rem;
+  font-size: 0.68rem;
+  white-space: nowrap;
   font-weight: 600;
   color: var(--suave);
   text-decoration: none;
-  padding: 8px 6px;
+  padding: 8px 2px;
   border-radius: 14px;
   flex: 1;
   text-align: center;
@@ -229,3 +230,10 @@ button:disabled { opacity: 0.45; cursor: default; }
 .tipo-reforco { border-left: 6px solid var(--vermelho); }
 .tipo-novo { border-left: 6px solid var(--cinza); }
 .tipo-mini, .tipo-geral, .tipo-analise { border-left: 6px solid var(--verde); }
+
+/* Seletor do concurso em foco */
+.trocador { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 12px; scrollbar-width: none; }
+.trocador::-webkit-scrollbar { display: none; }
+.pilula { white-space: nowrap; border-radius: 999px; padding: 8px 14px; font-size: 0.86rem; flex-shrink: 0; }
+.pilula.ativa { background: var(--primaria); color: #fff; border-color: transparent; box-shadow: 0 6px 16px rgba(79, 70, 229, 0.25); }
+.pilula.mais { border-style: dashed; color: var(--primaria); }

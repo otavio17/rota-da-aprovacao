@@ -68,13 +68,23 @@ export function Hoje() {
           <div><strong>{semana}</strong><span>semana</span></div>
           <div><strong>{sequencia}</strong><span>dia(s) seguidos</span></div>
         </div>
-        <div className="progresso" aria-label="Assuntos liberados">
-          <div style={{ width: `${Math.round((liberados / Math.max(1, edital.topicos.length)) * 100)}%` }} />
-        </div>
-        <p className="suave">
-          {liberados} de {edital.topicos.length} assuntos liberados
-        </p>
+        {edital.topicos.length > 0 && (
+          <>
+            <div className="progresso" aria-label="Assuntos liberados">
+              <div style={{ width: `${Math.round((liberados / edital.topicos.length) * 100)}%` }} />
+            </div>
+            <p className="suave">
+              {liberados} de {edital.topicos.length} assuntos liberados
+            </p>
+          </>
+        )}
       </header>
+
+      {edital.topicos.length === 0 && (
+        <p className="aviso">
+          Este concurso ainda não tem assuntos cadastrados. Quando o edital for preenchido, o cronograma aparece aqui.
+        </p>
+      )}
 
       <div className="grade-prazos">
         <Prazo rotulo="Inscrições terminam" data={edital.inscricaoFim} hoje={hoje} />

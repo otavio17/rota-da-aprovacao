@@ -1,22 +1,23 @@
-import { useState } from 'react';
-import type { Concurso, Dados } from '../domain/regras';
+import { useState, type FormEvent } from 'react';
 import { hojeLocal } from '../dados/armazenamento';
+import type { Concurso, Perfil } from '../domain/regras';
 
 interface Props {
   concursos: Concurso[];
-  atualizar: (fn: (d: Dados) => Dados) => void;
+  jaAdicionados: string[];
+  podeCancelar: boolean;
+  onSalvar: (perfil: Perfil) => void;
+  onCancelar: () => void;
 }
 
-export function Onboarding({ concursos, atualizar }: Props) {
-  // Os concursos chegam depois do primeiro render, então os valores padrão
-  // são derivados na hora (e não copiados para o estado no mount).
+export function Onboarding({ concursos, jaAdicionados, podeCancelar, onSalvar, onCancelar }: Props) {
+  const disponiveis = concursos.filter((c) => !jaAdicionados.includes(c.id));
   const [nome, setNome] = useState('');
   const [escolhido, setEscolhido] = useState('');
   const [dataEscolhida, setDataEscolhida] = useState<string | null>(null);
   const [horasDia, setHorasDia] = useState(4);
 
-  const concursoId = escolhido || concursos[0]?.id || '';
-  const concurso = concursos.find((c) => c.id === concursoId);
+  const concurso = disponiveis.find((c) => c.id === escolhido) ?? disponiveis[0];
   const dataProva = dataEscolhida ?? concurso?.dataProva ?? '';
 
   function escolher(id: string) {
@@ -24,25 +25,36 @@ export function Onboarding({ concursos, atualizar }: Props) {
     setDataEscolhida(null);
   }
 
-  function salvar(e: React.FormEvent) {
+  function salvar(e: FormEvent) {
     e.preventDefault();
     if (!concurso) return;
-    atualizar((d) => ({
-      ...d,
-      perfil: {
-        nome: nome.trim(),
-        concursoId: concurso.id,
-        pasta: concurso.pasta,
-        dataProva,
-        horasDia,
-        criadoEm: hojeLocal(),
-      },
-    }));
+    onSalvar({
+      nome: nome.trim(),
+      concursoId: concurso.id,
+      pasta: concurso.pasta,
+      dataProva,
+      horasDia,
+      criadoEm: hojeLocal(),
+    });
+  }
+
+  if (disponiveis.length === 0) {
+    return (
+      <main className="conteudo">
+        <h1>Concursos</h1>
+        <p className="aviso">Todos os concursos cadastrados já foram adicionados.</p>
+        {podeCancelar && (
+          <button className="botao" onClick={onCancelar}>
+            Voltar
+          </button>
+        )}
+      </main>
+    );
   }
 
   return (
     <main className="conteudo">
-      <h1>Pré-cadastro</h1>
+      <h1>{podeCancelar ? 'Adicionar concurso' : 'Pré-cadastro'}</h1>
       <form className="cartao" onSubmit={salvar}>
         <label>
           Seu nome (só para exibir)
@@ -50,8 +62,8 @@ export function Onboarding({ concursos, atualizar }: Props) {
         </label>
         <label>
           Concurso
-          <select value={concursoId} onChange={(e) => escolher(e.target.value)}>
-            {concursos.map((c) => (
+          <select value={concurso?.id ?? ''} onChange={(e) => escolher(e.target.value)}>
+            {disponiveis.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.nome} ({c.banca})
               </option>
@@ -76,6 +88,11 @@ export function Onboarding({ concursos, atualizar }: Props) {
         <button type="submit" className="botao" disabled={!concurso || !dataProva}>
           Salvar e gerar cronograma
         </button>
+        {podeCancelar && (
+          <button type="button" onClick={onCancelar}>
+            Cancelar
+          </button>
+        )}
       </form>
     </main>
   );

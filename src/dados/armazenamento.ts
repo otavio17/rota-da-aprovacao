@@ -1,12 +1,19 @@
 import { createContext, useContext } from 'react';
-import type { Concurso, Dados, Edital, Questao } from '../domain/regras';
+import type { Dados, Edital, Questao, Simulado } from '../domain/regras';
+
+export interface ComparacaoItem {
+  id: string;
+  nome: string;
+  simulados: Simulado[];
+}
 
 export interface ContextoValor {
-  dados: Dados;
+  dados: Dados; // concurso em foco
   atualizar: (fn: (d: Dados) => Dados) => void;
   edital: Edital;
   questoes: Questao[];
   hoje: string;
+  comparativo: ComparacaoItem[]; // todos os concursos adicionados (usado só na Análise)
 }
 
 export const Contexto = createContext<ContextoValor | null>(null);
@@ -17,7 +24,14 @@ export function useContexto(): ContextoValor {
   return c;
 }
 
-const CHAVE = 'estudos-concurso:v1';
+// Um bloco de dados por concurso adicionado, e qual deles está em foco.
+export interface Armazem {
+  ativo: string | null;
+  concursos: Record<string, Dados>;
+}
+
+const CHAVE = 'rota-da-aprovacao:v2';
+const CHAVE_ANTIGA = 'estudos-concurso:v1';
 
 export const dadosVazios = (): Dados => ({
   perfil: null,
@@ -28,22 +42,32 @@ export const dadosVazios = (): Dados => ({
   sessoes: [],
 });
 
-// Por enquanto os dados ficam no navegador (localStorage). A camada Firebase
-// (seção 2 da especificação) entra depois, trocando estas duas funções.
-export function lerDados(): Dados {
+export function lerArmazem(): Armazem {
   try {
     const bruto = localStorage.getItem(CHAVE);
-    return bruto ? { ...dadosVazios(), ...JSON.parse(bruto) } : dadosVazios();
+    if (bruto) {
+      const a = JSON.parse(bruto) as Partial<Armazem>;
+      return { ativo: a.ativo ?? null, concursos: a.concursos ?? {} };
+    }
+    // Migração: a versão anterior guardava um único concurso.
+    const antigo = localStorage.getItem(CHAVE_ANTIGA);
+    if (antigo) {
+      const d: Dados = { ...dadosVazios(), ...JSON.parse(antigo) };
+      if (d.perfil) {
+        return { ativo: d.perfil.concursoId, concursos: { [d.perfil.concursoId]: d } };
+      }
+    }
   } catch {
-    return dadosVazios();
+    // dados corrompidos: começa do zero
   }
+  return { ativo: null, concursos: {} };
 }
 
-export function gravarDados(d: Dados): void {
+export function gravarArmazem(a: Armazem): void {
   try {
-    localStorage.setItem(CHAVE, JSON.stringify(d));
+    localStorage.setItem(CHAVE, JSON.stringify(a));
   } catch {
-    // armazenamento cheio ou bloqueado: o app segue funcionando nesta sessão
+    // armazenamento cheio ou bloqueado: o app segue nesta sessão
   }
 }
 
@@ -59,5 +83,3 @@ export async function carregarJson<T>(caminho: string): Promise<T> {
   if (!r.ok) throw new Error(`Não foi possível carregar ${caminho}`);
   return (await r.json()) as T;
 }
-
-export type { Concurso };

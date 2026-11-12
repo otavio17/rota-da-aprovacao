@@ -3,71 +3,136 @@ import { HashRouter, Navigate, NavLink, Route, Routes } from 'react-router-dom';
 import {
   Contexto,
   carregarJson,
-  gravarDados,
+  dadosVazios,
+  gravarArmazem,
   hojeLocal,
-  lerDados,
+  lerArmazem,
+  type Armazem,
+  type ComparacaoItem,
   type ContextoValor,
 } from './dados/armazenamento';
-import type { Concurso, Dados, Edital, Questao } from './domain/regras';
+import type { Concurso, Dados, Edital, Perfil, Questao } from './domain/regras';
 import { Onboarding } from './telas/Onboarding';
+import { Trocador } from './telas/Trocador';
 import { Hoje } from './telas/Hoje';
 import { Cronograma } from './telas/Cronograma';
 import { Simulado } from './telas/Simulado';
 import { Analise } from './telas/Analise';
 import { Erros } from './telas/Erros';
 
+interface Carregado {
+  id: string;
+  edital: Edital;
+  questoes: Questao[];
+}
+
 export default function App() {
-  const [dados, setDados] = useState<Dados>(lerDados);
+  const [armazem, setArmazem] = useState<Armazem>(lerArmazem);
   const [concursos, setConcursos] = useState<Concurso[]>([]);
-  const [edital, setEdital] = useState<Edital | null>(null);
-  const [questoes, setQuestoes] = useState<Questao[]>([]);
+  const [carregado, setCarregado] = useState<Carregado | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  const [adicionando, setAdicionando] = useState(false);
   const hoje = hojeLocal();
 
-  const atualizar = useCallback((fn: (d: Dados) => Dados) => setDados((d) => fn(d)), []);
+  const ativo = armazem.ativo;
+  const dados: Dados | null = ativo ? armazem.concursos[ativo] ?? null : null;
+  const adicionados = Object.keys(armazem.concursos);
+
+  // Atualiza só o concurso em foco.
+  const atualizar = useCallback((fn: (d: Dados) => Dados) => {
+    setArmazem((a) => {
+      if (!a.ativo || !a.concursos[a.ativo]) return a;
+      return { ...a, concursos: { ...a.concursos, [a.ativo]: fn(a.concursos[a.ativo]) } };
+    });
+  }, []);
 
   useEffect(() => {
-    gravarDados(dados);
-  }, [dados]);
+    gravarArmazem(armazem);
+  }, [armazem]);
 
   useEffect(() => {
     carregarJson<Concurso[]>('concursos.json').then(setConcursos).catch((e) => setErro(String(e)));
   }, []);
 
-  const pasta = dados.perfil?.pasta;
+  // Carrega edital e questões só do concurso em foco.
+  const pasta = concursos.find((c) => c.id === ativo)?.pasta;
   useEffect(() => {
-    if (!pasta) {
-      setEdital(null);
-      setQuestoes([]);
-      return;
-    }
+    if (!ativo || !pasta) return;
+    let cancelado = false;
     Promise.all([
       carregarJson<Edital>(`${pasta}/edital.json`),
       carregarJson<Questao[]>(`${pasta}/questoes.json`),
     ])
-      .then(([e, q]) => {
-        setEdital(e);
-        setQuestoes(q);
+      .then(([edital, questoes]) => {
+        if (!cancelado) setCarregado({ id: ativo, edital, questoes });
       })
-      .catch((e) => setErro(String(e)));
-  }, [pasta]);
+      .catch((e) => {
+        if (!cancelado) setErro(String(e));
+      });
+    return () => {
+      cancelado = true;
+    };
+  }, [ativo, pasta]);
 
-  const valor = useMemo<ContextoValor | null>(
-    () => (edital ? { dados, atualizar, edital, questoes, hoje } : null),
-    [dados, atualizar, edital, questoes, hoje],
+  const comparativo = useMemo<ComparacaoItem[]>(
+    () =>
+      Object.entries(armazem.concursos).map(([id, d]) => ({
+        id,
+        nome: concursos.find((c) => c.id === id)?.nome ?? id,
+        simulados: d.simulados,
+      })),
+    [armazem.concursos, concursos],
   );
 
-  if (erro) return <p className="aviso">Erro ao carregar: {erro}</p>;
+  const valor = useMemo<ContextoValor | null>(
+    () =>
+      dados && carregado && carregado.id === ativo
+        ? { dados, atualizar, edital: carregado.edital, questoes: carregado.questoes, hoje, comparativo }
+        : null,
+    [dados, atualizar, carregado, ativo, hoje, comparativo],
+  );
 
-  if (!dados.perfil) {
-    return <Onboarding concursos={concursos} atualizar={atualizar} />;
+  function adicionarConcurso(perfil: Perfil) {
+    setArmazem((a) => ({
+      ativo: perfil.concursoId,
+      concursos: { ...a.concursos, [perfil.concursoId]: { ...dadosVazios(), perfil } },
+    }));
+    setAdicionando(false);
+  }
+
+  function trocar(id: string) {
+    setArmazem((a) => ({ ...a, ativo: id }));
+    setAdicionando(false);
+  }
+
+  if (erro) return <p className="aviso">Erro ao carregar: {erro}</p>;
+  if (concursos.length === 0) return <p className="aviso">Carregando…</p>;
+
+  if (!dados || adicionando) {
+    return (
+      <Onboarding
+        concursos={concursos}
+        jaAdicionados={adicionados}
+        podeCancelar={adicionados.length > 0}
+        onSalvar={adicionarConcurso}
+        onCancelar={() => setAdicionando(false)}
+      />
+    );
   }
   if (!valor) return <p className="aviso">Carregando…</p>;
 
   return (
     <Contexto.Provider value={valor}>
       <HashRouter>
-        <main className="conteudo">
+        {/* key: ao trocar de concurso, as telas são remontadas e nada de um concurso vaza para outro */}
+        <main className="conteudo" key={ativo ?? ''}>
+          <Trocador
+            concursos={concursos}
+            ativos={adicionados}
+            ativo={ativo ?? ''}
+            onTrocar={trocar}
+            onAdicionar={() => setAdicionando(true)}
+          />
           <Routes>
             <Route path="/hoje" element={<Hoje />} />
             <Route path="/cronograma" element={<Cronograma />} />

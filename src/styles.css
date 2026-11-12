@@ -290,22 +290,29 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
   .item > .botao { flex: 1 1 100%; }
 }
 
-/* Menu responsivo: barra inferior no celular, barra no topo no computador e no tablet */
+/* Menu no topo em todas as telas. No celular os links dividem a largura; se faltar espaço, a barra desliza na horizontal */
+.navegacao {
+  top: 0;
+  bottom: auto;
+  left: 0;
+  right: 0;
+  transform: none;
+  width: 100%;
+  border-radius: 0;
+  border-width: 0 0 1px;
+  padding: max(8px, env(safe-area-inset-top)) 8px 8px; /* no iPhone com entalhe, a barra fica abaixo da área da bateria e do relógio */
+  gap: 4px;
+  justify-content: flex-start;
+  overflow-x: auto;
+  scrollbar-width: none;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+}
+.navegacao::-webkit-scrollbar { display: none; }
+.navegacao a { flex: 1 1 auto; min-width: 0; font-size: 0.8rem; padding: 9px 6px; }
+.conteudo { padding-top: calc(72px + env(safe-area-inset-top)); padding-bottom: 40px; }
+
 @media (min-width: 900px) {
-  .navegacao {
-    top: 0;
-    bottom: auto;
-    left: 0;
-    right: 0;
-    transform: none;
-    width: 100%;
-    border-radius: 0;
-    border-width: 0 0 1px;
-    padding: 10px 24px;
-    gap: 6px;
-    justify-content: center;
-    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
-  }
+  .navegacao { padding: max(10px, env(safe-area-inset-top)) 24px 10px; gap: 6px; justify-content: center; }
   .navegacao a { flex: 0 1 auto; min-width: 120px; font-size: 0.9rem; padding: 10px 18px; }
-  .conteudo { padding-top: 88px; padding-bottom: 48px; }
+  .conteudo { padding-top: calc(88px + env(safe-area-inset-top)); padding-bottom: 48px; }
 }

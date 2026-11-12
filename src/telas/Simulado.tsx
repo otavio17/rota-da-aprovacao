@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useContexto } from '../dados/armazenamento';
 import {
   MINI_QUESTOES,
@@ -38,6 +38,7 @@ function formatar(seg: number): string {
 
 export function Simulado() {
   const { dados, atualizar, edital, questoes, hoje } = useContexto();
+  const navigate = useNavigate();
   const [params] = useSearchParams();
   const revisaoId = params.get('revisao');
   const tipoParam = params.get('tipo');
@@ -71,7 +72,44 @@ export function Simulado() {
   // Tempo esgotado: finaliza sozinho.
   useEffect(() => {
     if (emAndamento && restanteSeg !== null && restanteSeg <= 0) finalizar();
-  });
+  }, [emAndamento, restanteSeg]);
+
+  // Atalhos de teclado no simulado: 1-5 / A-E para responder, setas para navegar, M para marcar.
+  useEffect(() => {
+    if (!emAndamento || !preparado) return;
+    function aoPressionarTecla(e: KeyboardEvent) {
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)) return;
+      const n = preparado!.questoes.length;
+      const num = parseInt(e.key, 10);
+      if (num >= 1 && num <= 5) {
+        setRespostas((prev) => ({ ...prev, [atual]: num - 1 }));
+        return;
+      }
+      const letraIdx = ['a', 'b', 'c', 'd', 'e'].indexOf(e.key.toLowerCase());
+      if (letraIdx !== -1) {
+        setRespostas((prev) => ({ ...prev, [atual]: letraIdx }));
+        return;
+      }
+      if (e.key === 'ArrowRight' && atual < n - 1) {
+        setAtual((a) => a + 1);
+        return;
+      }
+      if (e.key === 'ArrowLeft' && atual > 0) {
+        setAtual((a) => a - 1);
+        return;
+      }
+      if (e.key === 'm' || e.key === 'M') {
+        setMarcadas((prev) => {
+          const novo = new Set(prev);
+          if (novo.has(atual)) novo.delete(atual);
+          else novo.add(atual);
+          return novo;
+        });
+      }
+    }
+    window.addEventListener('keydown', aoPressionarTecla);
+    return () => window.removeEventListener('keydown', aoPressionarTecla);
+  }, [emAndamento, preparado, atual]);
 
   const nomeBloco = (id: string) => edital.blocos.find((b) => b.id === id)?.nome ?? id;
   const titulo = (id: string) => edital.topicos.find((t) => t.id === id)?.titulo ?? id;
@@ -121,7 +159,13 @@ export function Simulado() {
     }
 
     if (lista.length === 0) {
-      setMensagem('Não há questões disponíveis para montar este simulado. Veja os avisos do banco.');
+      if (tipo === 'mini') {
+        setMensagem(
+          `Não há questões disponíveis para os assuntos da semana ${semana} nem para os assuntos em reforço. Adicione mais questões ao banco ou marque novos assuntos como estudados.`
+        );
+      } else {
+        setMensagem('Não há questões disponíveis para montar este simulado. Veja os avisos do banco.');
+      }
       return;
     }
     setMensagem(null);
@@ -163,6 +207,7 @@ export function Simulado() {
   function sair() {
     setPreparado(null);
     setConcluido(null);
+    navigate('/simulado', { replace: true });
   }
 
   // ---------- resultado ----------
@@ -188,7 +233,9 @@ export function Simulado() {
                 <li key={b.bloco} className="item">
                   <span>{b.nome}</span>
                   <span>
-                    {b.pct}% (mínimo {b.minimo}%) {b.ok ? '✓' : '✗'}
+                    {b.total === 0
+                      ? '— (0 questões neste simulado)'
+                      : `${b.pct}% (mínimo ${b.minimo}%) ${b.ok ? '✓' : '✗'}`}
                   </span>
                 </li>
               ))}
@@ -315,6 +362,9 @@ export function Simulado() {
             Finalizar
           </button>
         </div>
+        <p className="suave" style={{ textAlign: 'center', fontSize: '0.8rem', marginTop: '0.75rem' }}>
+          Atalhos: [1-5] ou [A-E] responde · [← / →] navega · [M] marcar para rever
+        </p>
       </section>
     );
   }

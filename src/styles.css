@@ -180,8 +180,10 @@ button:disabled { opacity: 0.45; cursor: default; }
 .topo { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
 .cronometro { font-variant-numeric: tabular-nums; font-weight: 800; color: var(--primaria); font-size: 1.1rem; }
 
+.enunciado { font-size: 1rem; line-height: 1.6; white-space: pre-wrap; }
+
 .alternativas { display: grid; gap: 10px; }
-.alternativa { text-align: left; font-weight: 500; padding: 14px; }
+.alternativa { text-align: left; font-weight: 500; padding: 14px; transition: border-color 0.15s, background 0.15s; }
 .alternativa.escolhida { border-color: var(--primaria); background: var(--primaria-suave); color: var(--primaria); }
 .alternativas-fixas { padding-left: 20px; display: grid; gap: 6px; }
 .alternativas-fixas .correta { color: var(--verde); font-weight: 700; }
@@ -237,3 +239,21 @@ button:disabled { opacity: 0.45; cursor: default; }
 .pilula { white-space: nowrap; border-radius: 999px; padding: 8px 14px; font-size: 0.86rem; flex-shrink: 0; }
 .pilula.ativa { background: var(--primaria); color: #fff; border-color: transparent; box-shadow: 0 6px 16px rgba(79, 70, 229, 0.25); }
 .pilula.mais { border-style: dashed; color: var(--primaria); }
+
+/* Scroll suave em toda a página */
+html { scroll-behavior: smooth; }
+
+/* Safe-area para dispositivos com notch */
+.conteudo { padding-bottom: max(110px, calc(110px + env(safe-area-inset-bottom))); }
+.navegacao { bottom: max(12px, env(safe-area-inset-bottom)); }
+
+/* Animação de entrada para cartões */
+.cartao { animation: surgir 0.25s ease-out; }
+@keyframes surgir {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Focus visible para acessibilidade via teclado */
+:focus-visible { outline: 2px solid var(--primaria); outline-offset: 2px; }
+button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }

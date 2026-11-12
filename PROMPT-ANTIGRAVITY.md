@@ -24,7 +24,7 @@ Você vai continuar o projeto "rota-da-aprovacao": um site pessoal de estudos pa
 - Cores fixas de estado: cinza (Novo), azul (Estudado), vermelho (Reforço), amarelo (Consolidação), verde (Liberado).
 - Critério dos prazos: até 30 dias = urgente (vermelho); 31 a 90 = atenção (amarelo); mais de 90 = tranquilo (verde).
 
-## Estado atual (commit de referência: 95ab56f "feat: um concurso em foco por vez, seletor no topo e comparação na Análise")
+## Estado atual (commit de referência: c7ee0bf "feat: atalhos de teclado no simulado e ajustes de usabilidade")
 - Repositório oficial configurado e em sincronia com `origin/main` (GitHub: otavio17/rota-da-aprovacao).
 - src/domain/regras.ts: funções puras (estados, revisão, próximo passo, montagem de simulados, pontuação, análise, prazos). Testadas em src/domain/regras.test.ts (24 testes). Rodar com `npm test`.
 - src/telas/: Onboarding, Hoje (com cabeçalho, prazos e progresso), Cronograma, Simulado (com atalhos de teclado 1-5/A-E, setas, M), Analise, Erros.

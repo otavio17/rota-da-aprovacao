@@ -26,6 +26,8 @@ export interface Edital {
   blocos: Bloco[];
   topicos: Topico[];
   observacao?: string;
+  inscricaoInicio?: string;
+  inscricaoFim?: string;
 }
 export interface Questao {
   id: string;
@@ -421,4 +423,20 @@ export function aplicarSimulado(d: Dados, sim: Simulado, hoje: string): Dados {
     erros: [...d.erros, ...novosErros],
     simulados: [...d.simulados, sim],
   };
+}
+
+// ---------- prazos (alerta colorido) ----------
+// Critério: dias até a data-alvo.
+//   passou   → data já ocorreu
+//   urgente  → até 30 dias (vermelho)
+//   atencao  → de 31 a 90 dias (amarelo)
+//   tranquilo→ mais de 90 dias (verde)
+export type NivelPrazo = 'passou' | 'urgente' | 'atencao' | 'tranquilo';
+
+export function classificarPrazo(dataAlvo: string, hoje: string): { dias: number; nivel: NivelPrazo } {
+  const dias = diasEntre(hoje, dataAlvo);
+  if (dias < 0) return { dias, nivel: 'passou' };
+  if (dias <= 30) return { dias, nivel: 'urgente' };
+  if (dias <= 90) return { dias, nivel: 'atencao' };
+  return { dias, nivel: 'tranquilo' };
 }

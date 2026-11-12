@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   aplicarNota,
+  classificarPrazo,
   aplicarSimulado,
   alocarProporcional,
   diaDaSemana,
@@ -221,5 +222,24 @@ describe('aplicarSimulado', () => {
     expect(d.erros).toHaveLength(1);
     expect(d.erros[0].questaoId).toBe('a2');
     expect(d.simulados).toHaveLength(1);
+  });
+});
+
+describe('classificarPrazo', () => {
+  it('até 30 dias é urgente', () => {
+    expect(classificarPrazo('2026-12-10', '2026-11-12').nivel).toBe('urgente');
+    expect(classificarPrazo('2026-12-12', '2026-11-12').nivel).toBe('urgente');
+  });
+  it('de 31 a 90 dias é atenção', () => {
+    expect(classificarPrazo('2026-12-13', '2026-11-12').nivel).toBe('atencao');
+    expect(classificarPrazo('2027-02-10', '2026-11-12').nivel).toBe('atencao');
+  });
+  it('mais de 90 dias é tranquilo', () => {
+    expect(classificarPrazo('2027-03-14', '2026-11-12').nivel).toBe('tranquilo');
+  });
+  it('data que já passou', () => {
+    const r = classificarPrazo('2026-11-10', '2026-11-12');
+    expect(r.nivel).toBe('passou');
+    expect(r.dias).toBe(-2);
   });
 });

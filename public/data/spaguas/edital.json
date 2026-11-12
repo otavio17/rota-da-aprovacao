@@ -6,5 +6,7 @@
   "duracaoMin": 0,
   "observacao": "PENDENTE: blocos, número de questões e lista de assuntos (Anexo I do edital nº 01/2026) ainda não foram cadastrados. Preencher a partir do edital em conhecimento.fgv.br/concursos/spaguas26. Até lá, o site não monta simulado geral para este concurso.",
   "blocos": [],
-  "topicos": []
+  "topicos": [],
+  "inscricaoInicio": "2026-11-17",
+  "inscricaoFim": "2026-12-17"
 }

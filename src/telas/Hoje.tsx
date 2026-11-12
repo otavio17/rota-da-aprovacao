@@ -3,12 +3,26 @@ import { useContexto } from '../dados/armazenamento';
 import {
   diasEntre,
   marcarEstudado,
+  classificarPrazo,
   proximoPasso,
   registroInicial,
   semanaDoCronograma,
   sequenciaDias,
   type ItemHoje,
 } from '../domain/regras';
+
+function Prazo({ rotulo, data, hoje }: { rotulo: string; data?: string; hoje: string }) {
+  if (!data) return null;
+  const { dias, nivel } = classificarPrazo(data, hoje);
+  const texto = nivel === 'passou' ? 'encerrado' : dias === 0 ? 'é hoje' : `faltam ${dias} dias`;
+  return (
+    <div className={`prazo prazo-${nivel}`}>
+      <span className="prazo-rotulo">{rotulo}</span>
+      <strong>{texto}</strong>
+      <small>{data.split('-').reverse().join('/')}</small>
+    </div>
+  );
+}
 
 export function Hoje() {
   const { dados, atualizar, edital, hoje } = useContexto();
@@ -23,6 +37,7 @@ export function Hoje() {
   });
   const diasAteProva = diasEntre(hoje, perfil.dataProva);
   const sequencia = sequenciaDias(dados.sessoes.map((s) => s.data), hoje);
+  const liberados = edital.topicos.filter((t) => dados.registros[t.id]?.estado === 'liberado').length;
 
   const titulo = (id?: string) => edital.topicos.find((t) => t.id === id)?.titulo ?? '';
 
@@ -45,12 +60,26 @@ export function Hoje() {
 
   return (
     <section>
-      <header className="topo">
+      <header className="cabecalho">
+        <p className="saudacao">{perfil.nome ? `Oi, ${perfil.nome}` : 'Bom estudo'}</p>
         <h1>Hoje</h1>
+        <div className="estatisticas">
+          <div><strong>{diasAteProva}</strong><span>dias até a prova</span></div>
+          <div><strong>{semana}</strong><span>semana</span></div>
+          <div><strong>{sequencia}</strong><span>dia(s) seguidos</span></div>
+        </div>
+        <div className="progresso" aria-label="Assuntos liberados">
+          <div style={{ width: `${Math.round((liberados / Math.max(1, edital.topicos.length)) * 100)}%` }} />
+        </div>
         <p className="suave">
-          {diasAteProva} dias até a prova · semana {semana} · {sequencia} dia(s) seguido(s)
+          {liberados} de {edital.topicos.length} assuntos liberados
         </p>
       </header>
+
+      <div className="grade-prazos">
+        <Prazo rotulo="Inscrições terminam" data={edital.inscricaoFim} hoje={hoje} />
+        <Prazo rotulo="Prova" data={perfil.dataProva} hoje={hoje} />
+      </div>
 
       {fila.length === 0 && (
         <div className="cartao">

@@ -30,9 +30,6 @@ export interface Armazem {
   concursos: Record<string, Dados>;
 }
 
-const CHAVE = 'rota-da-aprovacao:v2';
-const CHAVE_ANTIGA = 'estudos-concurso:v1';
-
 export const dadosVazios = (): Dados => ({
   perfil: null,
   registros: {},
@@ -41,35 +38,6 @@ export const dadosVazios = (): Dados => ({
   vistas: {},
   sessoes: [],
 });
-
-export function lerArmazem(): Armazem {
-  try {
-    const bruto = localStorage.getItem(CHAVE);
-    if (bruto) {
-      const a = JSON.parse(bruto) as Partial<Armazem>;
-      return { ativo: a.ativo ?? null, concursos: a.concursos ?? {} };
-    }
-    // Migração: a versão anterior guardava um único concurso.
-    const antigo = localStorage.getItem(CHAVE_ANTIGA);
-    if (antigo) {
-      const d: Dados = { ...dadosVazios(), ...JSON.parse(antigo) };
-      if (d.perfil) {
-        return { ativo: d.perfil.concursoId, concursos: { [d.perfil.concursoId]: d } };
-      }
-    }
-  } catch {
-    // dados corrompidos: começa do zero
-  }
-  return { ativo: null, concursos: {} };
-}
-
-export function gravarArmazem(a: Armazem): void {
-  try {
-    localStorage.setItem(CHAVE, JSON.stringify(a));
-  } catch {
-    // armazenamento cheio ou bloqueado: o app segue nesta sessão
-  }
-}
 
 export function hojeLocal(): string {
   const d = new Date();

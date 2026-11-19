@@ -1,0 +1,57 @@
+rules_version = '2';
+
+// Regras do banco de dados do Rota da Aprovação.
+// - Cada conta lê e grava apenas os próprios dados.
+// - O administrador (documento admins/{uid}) lê a lista de usuários, mas não o progresso de estudo.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function estaLogado() {
+      return request.auth != null;
+    }
+
+    function ehDono(uid) {
+      return estaLogado() && request.auth.uid == uid;
+    }
+
+    function ehAdmin() {
+      return estaLogado() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function perfilValido() {
+      return request.resource.data.keys().hasOnly(['nome', 'email', 'criadoEm', 'ultimoAcesso'])
+        && request.resource.data.nome is string && request.resource.data.nome.size() <= 120
+        && request.resource.data.email is string && request.resource.data.email.size() <= 254
+        && request.resource.data.ultimoAcesso == request.time
+        && (!('criadoEm' in request.resource.data) || request.resource.data.criadoEm is timestamp);
+    }
+
+    function progressoValido() {
+      return request.resource.data.keys().hasOnly(['armazem', 'atualizadoEm'])
+        && request.resource.data.armazem is string && request.resource.data.armazem.size() < 900000
+        && request.resource.data.atualizadoEm == request.time;
+    }
+
+    // Administradores. O documento é criado no console do Firebase; o app nunca escreve aqui.
+    match /admins/{uid} {
+      allow read: if ehDono(uid);
+      allow write: if false;
+    }
+
+    // Perfil de cada conta. O administrador lê a lista inteira.
+    match /usuarios/{uid} {
+      allow read: if ehDono(uid) || ehAdmin();
+      allow create: if ehDono(uid) && perfilValido();
+      allow update: if ehDono(uid) && perfilValido()
+        && (!('criadoEm' in resource.data) || request.resource.data.criadoEm == resource.data.criadoEm);
+      allow delete: if false;
+    }
+
+    // Progresso de estudo: só o próprio dono lê e grava.
+    match /progresso/{uid} {
+      allow read: if ehDono(uid);
+      allow create, update: if ehDono(uid) && progressoValido();
+      allow delete: if false;
+    }
+  }
+}

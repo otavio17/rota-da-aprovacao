@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, type ReactNode } from 'react';
 import { hojeLocal } from '../dados/armazenamento';
 import type { Concurso, Perfil } from '../domain/regras';
 
@@ -8,9 +8,10 @@ interface Props {
   podeCancelar: boolean;
   onSalvar: (perfil: Perfil) => void;
   onCancelar: () => void;
+  topo?: ReactNode; // barra da conta, mostrada no alto da tela
 }
 
-export function Onboarding({ concursos, jaAdicionados, podeCancelar, onSalvar, onCancelar }: Props) {
+export function Onboarding({ concursos, jaAdicionados, podeCancelar, onSalvar, onCancelar, topo }: Props) {
   const disponiveis = concursos.filter((c) => !jaAdicionados.includes(c.id));
   const [nome, setNome] = useState('');
   const [escolhido, setEscolhido] = useState('');
@@ -41,6 +42,7 @@ export function Onboarding({ concursos, jaAdicionados, podeCancelar, onSalvar, o
   if (disponiveis.length === 0) {
     return (
       <main className="conteudo">
+        {topo}
         <h1>Concursos</h1>
         <p className="aviso">Todos os concursos cadastrados já foram adicionados.</p>
         {podeCancelar && (
@@ -54,6 +56,7 @@ export function Onboarding({ concursos, jaAdicionados, podeCancelar, onSalvar, o
 
   return (
     <main className="conteudo">
+      {topo}
       <h1>{podeCancelar ? 'Adicionar concurso' : 'Pré-cadastro'}</h1>
       <form className="cartao" onSubmit={salvar}>
         <label>

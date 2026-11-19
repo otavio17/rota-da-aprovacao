@@ -1,155 +1,47 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { HashRouter, Navigate, NavLink, Route, Routes } from 'react-router-dom';
-import {
-  Contexto,
-  carregarJson,
-  dadosVazios,
-  gravarArmazem,
-  hojeLocal,
-  lerArmazem,
-  type Armazem,
-  type ComparacaoItem,
-  type ContextoValor,
-} from './dados/armazenamento';
-import type { Concurso, Dados, Edital, Perfil, Questao } from './domain/regras';
-import { Onboarding } from './telas/Onboarding';
-import { Trocador } from './telas/Trocador';
-import { Hoje } from './telas/Hoje';
-import { Cronograma } from './telas/Cronograma';
-import { Simulado } from './telas/Simulado';
+import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { AuthProvider } from './auth/AuthContext';
+import { firebaseConfigurado } from './auth/firebase';
+import { Admin } from './telas/Admin';
 import { Analise } from './telas/Analise';
+import { AreaDeEstudo } from './telas/AreaDeEstudo';
+import { Cadastro } from './telas/Cadastro';
+import { Cronograma } from './telas/Cronograma';
+import { Entrar } from './telas/Entrar';
 import { Erros } from './telas/Erros';
-
-interface Carregado {
-  id: string;
-  edital: Edital;
-  questoes: Questao[];
-}
+import { Hoje } from './telas/Hoje';
+import { Simulado } from './telas/Simulado';
 
 export default function App() {
-  const [armazem, setArmazem] = useState<Armazem>(lerArmazem);
-  const [concursos, setConcursos] = useState<Concurso[]>([]);
-  const [carregado, setCarregado] = useState<Carregado | null>(null);
-  const [erro, setErro] = useState<string | null>(null);
-  const [adicionando, setAdicionando] = useState(false);
-  const hoje = hojeLocal();
-
-  const ativo = armazem.ativo;
-  const dados: Dados | null = ativo ? armazem.concursos[ativo] ?? null : null;
-  const adicionados = Object.keys(armazem.concursos);
-
-  // Atualiza só o concurso em foco.
-  const atualizar = useCallback((fn: (d: Dados) => Dados) => {
-    setArmazem((a) => {
-      if (!a.ativo || !a.concursos[a.ativo]) return a;
-      return { ...a, concursos: { ...a.concursos, [a.ativo]: fn(a.concursos[a.ativo]) } };
-    });
-  }, []);
-
-  useEffect(() => {
-    gravarArmazem(armazem);
-  }, [armazem]);
-
-  useEffect(() => {
-    carregarJson<Concurso[]>('concursos.json').then(setConcursos).catch((e) => setErro(String(e)));
-  }, []);
-
-  // Carrega edital e questões só do concurso em foco.
-  const pasta = concursos.find((c) => c.id === ativo)?.pasta;
-  useEffect(() => {
-    if (!ativo || !pasta) return;
-    let cancelado = false;
-    Promise.all([
-      carregarJson<Edital>(`${pasta}/edital.json`),
-      carregarJson<Questao[]>(`${pasta}/questoes.json`),
-    ])
-      .then(([edital, questoes]) => {
-        if (!cancelado) setCarregado({ id: ativo, edital, questoes });
-      })
-      .catch((e) => {
-        if (!cancelado) setErro(String(e));
-      });
-    return () => {
-      cancelado = true;
-    };
-  }, [ativo, pasta]);
-
-  const comparativo = useMemo<ComparacaoItem[]>(
-    () =>
-      Object.entries(armazem.concursos).map(([id, d]) => ({
-        id,
-        nome: concursos.find((c) => c.id === id)?.nome ?? id,
-        simulados: d.simulados,
-      })),
-    [armazem.concursos, concursos],
-  );
-
-  const valor = useMemo<ContextoValor | null>(
-    () =>
-      dados && carregado && carregado.id === ativo
-        ? { dados, atualizar, edital: carregado.edital, questoes: carregado.questoes, hoje, comparativo }
-        : null,
-    [dados, atualizar, carregado, ativo, hoje, comparativo],
-  );
-
-  function adicionarConcurso(perfil: Perfil) {
-    setArmazem((a) => ({
-      ativo: perfil.concursoId,
-      concursos: { ...a.concursos, [perfil.concursoId]: { ...dadosVazios(), perfil } },
-    }));
-    setAdicionando(false);
-  }
-
-  function trocar(id: string) {
-    setArmazem((a) => ({ ...a, ativo: id }));
-    setAdicionando(false);
-  }
-
-  if (erro) return <p className="aviso">Erro ao carregar: {erro}</p>;
-  if (concursos.length === 0) return <p className="aviso">Carregando…</p>;
-
-  if (!dados || adicionando) {
+  if (!firebaseConfigurado) {
     return (
-      <Onboarding
-        concursos={concursos}
-        jaAdicionados={adicionados}
-        podeCancelar={adicionados.length > 0}
-        onSalvar={adicionarConcurso}
-        onCancelar={() => setAdicionando(false)}
-      />
+      <main className="conteudo autenticacao">
+        <section className="cartao">
+          <h1>Login não configurado</h1>
+          <p className="aviso">
+            Este build não tem a configuração do Firebase (variáveis VITE_FIREBASE_*). Veja docs/configurar-firebase.md.
+          </p>
+        </section>
+      </main>
     );
   }
-  if (!valor) return <p className="aviso">Carregando…</p>;
 
   return (
-    <Contexto.Provider value={valor}>
+    <AuthProvider>
       <HashRouter>
-        {/* key: ao trocar de concurso, as telas são remontadas e nada de um concurso vaza para outro */}
-        <main className="conteudo" key={ativo ?? ''}>
-          <Trocador
-            concursos={concursos}
-            ativos={adicionados}
-            ativo={ativo ?? ''}
-            onTrocar={trocar}
-            onAdicionar={() => setAdicionando(true)}
-          />
-          <Routes>
+        <Routes>
+          <Route path="/entrar" element={<Entrar />} />
+          <Route path="/cadastro" element={<Cadastro />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route element={<AreaDeEstudo />}>
             <Route path="/hoje" element={<Hoje />} />
             <Route path="/cronograma" element={<Cronograma />} />
             <Route path="/simulado" element={<Simulado />} />
             <Route path="/analise" element={<Analise />} />
             <Route path="/erros" element={<Erros />} />
             <Route path="*" element={<Navigate to="/hoje" replace />} />
-          </Routes>
-        </main>
-        <nav className="navegacao">
-          <NavLink to="/hoje">Hoje</NavLink>
-          <NavLink to="/cronograma">Cronograma</NavLink>
-          <NavLink to="/simulado">Simulado</NavLink>
-          <NavLink to="/analise">Análise</NavLink>
-          <NavLink to="/erros">Erros</NavLink>
-        </nav>
+          </Route>
+        </Routes>
       </HashRouter>
-    </Contexto.Provider>
+    </AuthProvider>
   );
 }

@@ -316,3 +316,11 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
   .navegacao a { flex: 0 1 auto; min-width: 120px; font-size: 0.9rem; padding: 10px 18px; }
   .conteudo { padding-top: calc(88px + env(safe-area-inset-top)); padding-bottom: 48px; }
 }
+
+/* Conta, login e cadastro */
+.conta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; margin: 0 0 12px; font-size: 0.92rem; }
+.conta-acoes { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.botao.secundario { background: var(--cartao); color: var(--primaria); border: 1px solid var(--borda); box-shadow: none; }
+.erro-texto { color: var(--vermelho); font-size: 0.92rem; margin: 0; }
+.conteudo.autenticacao { max-width: 420px; padding-top: max(40px, env(safe-area-inset-top)); }
+.conteudo.autenticacao .cartao { display: grid; gap: 14px; }

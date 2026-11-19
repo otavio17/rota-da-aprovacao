@@ -3,6 +3,7 @@ import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { mensagemDeErro } from '../auth/erros';
 import { validarLogin } from '../auth/validacao';
+import { CampoSenha, MolduraDeAcesso } from './MolduraDeAcesso';
 
 export function Entrar() {
   const { pronto, usuario, entrar } = useAuth();
@@ -10,8 +11,9 @@ export function Entrar() {
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  const [verSenha, setVerSenha] = useState(false);
 
-  if (!pronto) return <p className="aviso">Carregando…</p>;
+  if (!pronto) return <p className="carregando">Carregando…</p>;
   if (usuario) return <Navigate to="/hoje" replace />;
 
   async function enviar(e: FormEvent) {
@@ -32,34 +34,32 @@ export function Entrar() {
   }
 
   return (
-    <main className="conteudo autenticacao">
-      <h1>Entrar</h1>
-      <form className="cartao" onSubmit={enviar} noValidate>
+    <MolduraDeAcesso titulo="Entrar na sua conta" subtitulo="Continue de onde você parou.">
+      <form className="acesso-campos" onSubmit={enviar} noValidate>
         <label>
           E-mail
           <input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </label>
-        <label>
-          Senha
-          <input
-            type="password"
-            autoComplete="current-password"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
-          />
-        </label>
+        <CampoSenha
+          rotulo="Senha"
+          valor={senha}
+          onMudar={setSenha}
+          autoComplete="current-password"
+          visivel={verSenha}
+          onAlternar={() => setVerSenha((v) => !v)}
+        />
         {erro && (
           <p className="erro-texto" role="alert">
             {erro}
           </p>
         )}
-        <button type="submit" className="botao" disabled={enviando}>
+        <button type="submit" className="botao largo" disabled={enviando}>
           {enviando ? 'Entrando…' : 'Entrar'}
         </button>
-        <p className="suave">
-          Ainda não tem conta? <Link to="/cadastro">Criar cadastro</Link>
+        <p className="acesso-troca">
+          Ainda não tem conta? <Link to="/cadastro">Criar conta</Link>
         </p>
       </form>
-    </main>
+    </MolduraDeAcesso>
   );
 }

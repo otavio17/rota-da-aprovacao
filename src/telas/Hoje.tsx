@@ -1,5 +1,8 @@
+import type { MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useContexto } from '../dados/armazenamento';
+import { Anel, Contador, SemanaDeEstudo, soltarConfete } from './Animados';
 import {
   diasEntre,
   marcarEstudado,
@@ -8,6 +11,7 @@ import {
   registroInicial,
   semanaDoCronograma,
   sequenciaDias,
+  somarDias,
   type Estado,
   type ItemHoje,
 } from '../domain/regras';
@@ -51,7 +55,25 @@ export function Hoje() {
 
   const titulo = (id?: string) => edital.topicos.find((t) => t.id === id)?.titulo ?? '';
 
-  function marcar(topicoId: string) {
+  const pctLiberado = edital.topicos.length ? Math.round((liberados / edital.topicos.length) * 100) : 0;
+  const datasDeEstudo = dados.sessoes.map((s) => s.data);
+  const chamada =
+    sequencia >= 2
+      ? `${sequencia} dias seguidos de estudo. Continue a sequência.`
+      : sequencia === 1
+        ? 'Sequência começada. Um assunto por dia mantém o ritmo.'
+        : 'Um assunto hoje já começa a sua sequência.';
+
+  // Assuntos estudados por dia nos últimos 14 dias.
+  const ritmo = Array.from({ length: 14 }, (_, i) => {
+    const data = somarDias(hoje, i - 13);
+    return { dia: data.slice(8, 10) + '/' + data.slice(5, 7), assuntos: datasDeEstudo.filter((d) => d === data).length };
+  });
+  const temRitmo = ritmo.some((r) => r.assuntos > 0);
+
+  function marcar(topicoId: string, evento: MouseEvent<HTMLButtonElement>) {
+    const caixa = evento.currentTarget.getBoundingClientRect();
+    soltarConfete(caixa.left + caixa.width / 2, caixa.top);
     atualizar((d) => ({
       ...d,
       registros: {
@@ -70,24 +92,34 @@ export function Hoje() {
 
   return (
     <section className="painel">
-      <header className="cabecalho">
-        <p className="saudacao">{perfil.nome ? `Oi, ${perfil.nome}` : 'Bom estudo'}</p>
-        <h1>Hoje</h1>
-        <div className="estatisticas">
-          <div><strong>{diasAteProva}</strong><span>dias até a prova</span></div>
-          <div><strong>{semana}</strong><span>semana</span></div>
-          <div><strong>{sequencia}</strong><span>dia(s) seguidos</span></div>
+      <header className="heroi">
+        <div className="heroi-texto">
+          <p className="saudacao">{perfil.nome ? `Oi, ${perfil.nome}` : 'Bom estudo'}</p>
+          <h1>{chamada}</h1>
+          <SemanaDeEstudo datas={datasDeEstudo} hoje={hoje} />
         </div>
-        {edital.topicos.length > 0 && (
-          <>
-            <div className="progresso" aria-label="Assuntos liberados">
-              <div style={{ width: `${Math.round((liberados / edital.topicos.length) * 100)}%` }} />
-            </div>
-            <p className="suave">
-              {liberados} de {edital.topicos.length} assuntos liberados
-            </p>
-          </>
-        )}
+        {edital.topicos.length > 0 && <Anel pct={pctLiberado} legenda="do edital liberado" />}
+        <div className="heroi-numeros">
+          <div>
+            <strong><Contador valor={diasAteProva} /></strong>
+            <span>dias até a prova</span>
+          </div>
+          <div>
+            <strong><Contador valor={semana} /></strong>
+            <span>semana do cronograma</span>
+          </div>
+          <div>
+            <strong><Contador valor={sequencia} /></strong>
+            <span>dia(s) seguidos</span>
+          </div>
+          <div>
+            <strong>
+              <Contador valor={liberados} />
+              <small> de {edital.topicos.length}</small>
+            </strong>
+            <span>assuntos liberados</span>
+          </div>
+        </div>
       </header>
 
       {edital.topicos.length === 0 && (
@@ -102,6 +134,29 @@ export function Hoje() {
       </div>
 
       <div className="painel-grade">
+        <div className="cartao ocupa-tudo">
+          <h2>Seu ritmo nos últimos 14 dias</h2>
+          {temRitmo ? (
+            <ResponsiveContainer width="100%" height={170}>
+              <BarChart data={ritmo} margin={{ top: 8, right: 4, left: -28, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="ritmo-cor" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#7c3aed" />
+                    <stop offset="100%" stopColor="#4f46e5" />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid vertical={false} stroke="#ececf6" />
+                <XAxis dataKey="dia" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#64748b' }} interval="preserveStartEnd" />
+                <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+                <Tooltip cursor={{ fill: 'rgba(79, 70, 229, 0.06)' }} />
+                <Bar dataKey="assuntos" name="Assuntos estudados" fill="url(#ritmo-cor)" radius={[8, 8, 8, 8]} maxBarSize={26} animationDuration={1100} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className="suave">Marque um assunto como estudado e o gráfico começa a subir.</p>
+          )}
+        </div>
+
         <div className="cartao">
           <h2>Próximos passos</h2>
           {fila.length === 0 && (
@@ -128,7 +183,7 @@ export function Hoje() {
                   </Link>
                 )}
                 {(item.tipo === 'novo' || item.tipo === 'reforco') && (
-                  <button className="botao pequeno" onClick={() => marcar(item.topicoId!)}>
+                  <button className="botao pequeno" onClick={(e) => marcar(item.topicoId!, e)}>
                     Marcar como estudado
                   </button>
                 )}

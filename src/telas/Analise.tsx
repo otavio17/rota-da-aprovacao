@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import {
+  Area,
+  AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
   Legend,
-  Line,
-  LineChart,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
@@ -13,10 +13,12 @@ import {
   YAxis,
 } from 'recharts';
 import { useContexto, type ComparacaoItem } from '../dados/armazenamento';
+import { Contador } from './Animados';
 import { diasEntre, pontuar, prioridades, type Resposta, type Topico } from '../domain/regras';
 
 const CORES = ['#4f46e5', '#e11d48'];
-const GRADE = '#e5e7eb';
+const GRADE = '#ececf6';
+const EIXO = { fontSize: 12, fill: '#64748b' };
 
 // A nota de conteúdo entre parênteses deixa os nomes longos demais para os gráficos
 function tituloCurto(titulo: string): string {
@@ -93,19 +95,19 @@ export function Analise() {
 
       <div className="kpis">
         <div className="kpi">
-          <strong>{dados.simulados.length}</strong>
+          <strong><Contador valor={dados.simulados.length} /></strong>
           <span>simulados feitos</span>
         </div>
         <div className="kpi">
-          <strong>{media === null ? '—' : `${media}%`}</strong>
+          <strong>{media === null ? '—' : <Contador valor={media} sufixo="%" />}</strong>
           <span>média dos gerais</span>
         </div>
         <div className="kpi">
-          <strong>{ultimo ? `${ultimo.pct}%` : '—'}</strong>
+          <strong>{ultimo ? <Contador valor={ultimo.pct} sufixo="%" /> : '—'}</strong>
           <span>último simulado</span>
         </div>
         <div className="kpi">
-          <strong>{recentes.length}</strong>
+          <strong><Contador valor={recentes.length} /></strong>
           <span>questões em 30 dias</span>
         </div>
       </div>
@@ -132,25 +134,37 @@ export function Analise() {
           <p className="suave">A evolução aparece depois de dois simulados gerais.</p>
         ) : (
           <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={evolucao}>
-              <CartesianGrid strokeDasharray="3 3" stroke={GRADE} />
-              <XAxis dataKey="nome" />
-              <YAxis domain={[0, 100]} unit="%" />
+            <AreaChart data={evolucao} margin={{ top: 12, right: 12, left: -12, bottom: 0 }}>
+              <defs>
+                {CORES.map((cor, k) => (
+                  <linearGradient key={cor} id={`evolucao-${k}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={cor} stopOpacity={0.28} />
+                    <stop offset="100%" stopColor={cor} stopOpacity={0} />
+                  </linearGradient>
+                ))}
+              </defs>
+              <CartesianGrid vertical={false} stroke={GRADE} />
+              <XAxis dataKey="nome" tickLine={false} axisLine={false} tick={EIXO} />
+              <YAxis domain={[0, 100]} unit="%" tickLine={false} axisLine={false} tick={EIXO} />
               <Tooltip />
               <Legend />
-              <ReferenceLine y={80} stroke="#e11d48" strokeDasharray="4 4" label="80%" />
+              <ReferenceLine y={80} stroke="#e11d48" strokeDasharray="4 4" label={{ value: 'meta 80%', position: 'insideTopLeft', fontSize: 12, fill: '#be123c' }} />
               {series.map((s, k) => (
-                <Line
+                <Area
                   key={s.id}
                   type="monotone"
                   dataKey={`s${k}`}
                   name={s.nome.split(' — ')[0]}
                   stroke={CORES[k]}
-                  strokeWidth={2.5}
+                  strokeWidth={3}
+                  fill={`url(#evolucao-${k})`}
+                  dot={{ r: 4, strokeWidth: 2, fill: '#fff' }}
+                  activeDot={{ r: 6 }}
                   connectNulls
+                  animationDuration={1400}
                 />
               ))}
-            </LineChart>
+            </AreaChart>
           </ResponsiveContainer>
         )}
       </div>
@@ -165,11 +179,11 @@ export function Analise() {
             <>
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={porBloco}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={GRADE} />
-                  <XAxis dataKey="nome" />
-                  <YAxis domain={[0, 100]} unit="%" />
-                  <Tooltip />
-                  <Bar dataKey="pct" fill="#4f46e5" name="% de acertos" radius={[6, 6, 0, 0]} />
+                  <CartesianGrid vertical={false} stroke={GRADE} />
+                  <XAxis dataKey="nome" tickLine={false} axisLine={false} tick={EIXO} />
+                  <YAxis domain={[0, 100]} unit="%" tickLine={false} axisLine={false} tick={EIXO} />
+                  <Tooltip cursor={{ fill: 'rgba(79, 70, 229, 0.06)' }} />
+                  <Bar dataKey="pct" fill="#4f46e5" name="% de acertos" radius={[10, 10, 0, 0]} maxBarSize={64} animationDuration={1100} />
                 </BarChart>
               </ResponsiveContainer>
               <p className="suave">
@@ -189,13 +203,13 @@ export function Analise() {
           ) : (
             <ResponsiveContainer width="100%" height={Math.max(200, forcaGrafico.length * 44)}>
               <BarChart data={forcaGrafico} layout="vertical" margin={{ left: 8, right: 24 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke={GRADE} />
-                <XAxis type="number" domain={[0, 100]} unit="%" />
-                <YAxis type="category" dataKey="titulo" width={190} tick={{ fontSize: 12 }} />
-                <Tooltip />
-                <Bar dataKey="reforco" name="Abaixo de 80%" stackId="forca" fill="#e11d48" />
-                <Bar dataKey="consolidacao" name="De 80% a 84%" stackId="forca" fill="#f59e0b" />
-                <Bar dataKey="liberado" name="85% ou mais" stackId="forca" fill="#10b981" />
+                <CartesianGrid horizontal={false} stroke={GRADE} />
+                <XAxis type="number" domain={[0, 100]} unit="%" tickLine={false} axisLine={false} tick={EIXO} />
+                <YAxis type="category" dataKey="titulo" width={190} tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: '#334155' }} />
+                <Tooltip cursor={{ fill: 'rgba(79, 70, 229, 0.06)' }} />
+                <Bar dataKey="reforco" name="Abaixo de 80%" stackId="forca" fill="#e11d48" radius={[0, 8, 8, 0]} maxBarSize={20} animationDuration={1100} />
+                <Bar dataKey="consolidacao" name="De 80% a 84%" stackId="forca" fill="#f59e0b" radius={[0, 8, 8, 0]} maxBarSize={20} animationDuration={1100} />
+                <Bar dataKey="liberado" name="85% ou mais" stackId="forca" fill="#10b981" radius={[0, 8, 8, 0]} maxBarSize={20} animationDuration={1100} />
               </BarChart>
             </ResponsiveContainer>
           )}

@@ -11,6 +11,7 @@ import {
 } from '../dados/armazenamento';
 import { useProgresso, type EstadoSalvamento } from '../dados/useProgresso';
 import type { Concurso, Dados, Edital, Perfil, Questao } from '../domain/regras';
+import { Marca } from './MolduraDeAcesso';
 import { Onboarding } from './Onboarding';
 import { Trocador } from './Trocador';
 
@@ -176,6 +177,7 @@ function EstudoDaConta({ usuario }: { usuario: UsuarioApp }) {
         <Outlet />
       </main>
       <nav className="navegacao">
+        <Marca />
         <NavLink to="/hoje">Hoje</NavLink>
         <NavLink to="/cronograma">Cronograma</NavLink>
         <NavLink to="/simulado">Simulado</NavLink>
